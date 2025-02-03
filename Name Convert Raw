@@ -1,0 +1,109 @@
+// Helper function to create a button
+function createButton(document, text, bgColor, onClick) {
+    const button = document.createElement('button');
+    button.textContent = text;
+    button.style = `margin: 10px; padding: 10px 20px; border: none; border-radius: 5px; background: ${bgColor}; color: #fff; font-size: 16px; cursor: pointer;`;
+    button.onclick = onClick;
+    return button;
+}
+
+// Helper function to create a textarea
+function createTextArea(document, placeholder, borderColor, height) {
+    const textarea = document.createElement('textarea');
+    textarea.style = `width: 300px; height: ${height}; margin: 10px; padding: 10px; border: 2px solid ${borderColor}; border-radius: 5px; font-size: 16px;`;
+    textarea.placeholder = placeholder;
+    return textarea;
+}
+
+// Function to extract ID from file name
+function extractID(fileName) {
+    const match = fileName.match(/ID: (\d+)/);
+    return match ? match[1] : null;
+}
+
+// Function to extract file name without ID
+function extractFileName(fileName) {
+    const match = fileName.match(/File Name: (.+)/);
+    return match ? match[1].trim() : null;
+}
+
+// Main function to create the converter UI
+function createConverter() {
+    const newWindow = window.open('', '_blank', 'width=800,height=600,top=100,left=100');
+    if (!newWindow) return;
+
+    const container = newWindow.document.createElement('div');
+    container.style = `display: flex; justify-content: space-around; padding: 20px;`;
+
+    // Left Container (New and Old File Names, Convert Button)
+    const leftContainer = newWindow.document.createElement('div');
+    const newTitlesBox = createTextArea(newWindow.document, 'Enter new file names here...', '#007bff', '150px');
+    const oldTitlesBox = createTextArea(newWindow.document, 'Enter old file names here...', '#28a745', '150px');
+    
+    const countDisplay = newWindow.document.createElement('div');
+    countDisplay.style = `margin: 10px; font-size: 14px; color: #333; text-align: center;`;
+    countDisplay.textContent = 'Results will appear here after conversion.';
+
+    const convertButton = createButton(newWindow.document, 'Convert', '#007bff', () => {
+        const newFileNames = newTitlesBox.value.trim().split('\n').map(name => name.trim()).filter(name => name !== '');
+        const oldTitles = oldTitlesBox.value.split('\n');
+
+        const newFileNameMap = new Map();
+        newFileNames.forEach(newFileName => {
+            const id = extractID(newFileName);
+            const fileName = extractFileName(newFileName);
+            if (id && fileName) {
+                newFileNameMap.set(fileName, id);
+            }
+        });
+
+        let replacedCount = 0;
+        oldTitlesBox.value = oldTitles.map(oldTitle => {
+            if (oldTitle.startsWith('File Name: ')) {
+                const oldFileName = oldTitle.replace('File Name: ', '').trim();
+                if (newFileNameMap.has(oldFileName)) {
+                    replacedCount++;
+                    return `File Name: ${newFileNameMap.get(oldFileName)}`;
+                }
+            }
+            return oldTitle;
+        }).join('\n');
+
+        countDisplay.textContent = `New File Names Found: ${newFileNames.length}, File Names Replaced: ${replacedCount}`;
+    });
+
+    // Right Container (Title Trimming)
+    const rightContainer = newWindow.document.createElement('div');
+    const titlesBox = createTextArea(newWindow.document, 'Enter titles here...', '#ffc107', '150px');
+    const trimResultDisplay = newWindow.document.createElement('div');
+    trimResultDisplay.style = `margin: 10px; font-size: 14px; color: #333; text-align: center;`;
+    trimResultDisplay.textContent = 'Trimmed results will appear here.';
+
+    const trimButton = createButton(newWindow.document, 'Trim Titles', '#ffc107', () => {
+        const titles = titlesBox.value.split('\n');
+        const titleLines = titles.filter(line => line.startsWith('Title: ')); // Filter only lines starting with "Title: "
+        let totalTitles = titleLines.length;
+        let trimmedCount = 0;
+
+        titlesBox.value = titles.map(title => {
+            if (title.startsWith('Title: ')) {
+                const titleText = title.replace('Title: ', '').trim();
+                if (titleText.length > 90) {
+                    trimmedCount++;
+                    return `Title: ${trimToMaxLength(titleText, 90)}`; // Trim to 90 characters, preserving whole words
+                }
+            }
+            return title;
+        }).join('\n');
+
+        trimResultDisplay.textContent = `Total Titles: ${totalTitles}, Titles Trimmed: ${trimmedCount}`;
+    });
+
+    rightContainer.append(titlesBox, trimButton, trimResultDisplay);
+    leftContainer.append(newTitlesBox, oldTitlesBox, convertButton, countDisplay);
+    container.append(leftContainer, rightContainer);
+    newWindow.document.body.append(container);
+}
+
+// Call the function to create the converter
+createConverter();
