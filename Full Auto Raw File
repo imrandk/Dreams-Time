@@ -1,0 +1,71 @@
+(function () {
+    'use strict';
+
+    let intervalId, isSubmitCooldown = false, checkingNewImage = false, previousSrc = "";
+    const cooldownTime = 500, checkInterval = 500, delay = 100, waitAfterNewImage = 1000;
+
+    function selectDropdown(dropdownId, value) {
+        const dropdown = document.getElementById(dropdownId);
+        if (dropdown && dropdown.value !== value) {
+            dropdown.value = value;
+            dropdown.dispatchEvent(new Event('change', { bubbles: true }));
+            dropdown.dispatchEvent(new Event('input', { bubbles: true }));
+        }
+    }
+
+    function addTextToField(selector, text) {
+        const field = document.querySelector(selector);
+        if (field && !field.value.trim().endsWith(text)) {
+            field.value = (field.value.trim() + " " + text).trim();
+            field.dispatchEvent(new Event('input', { bubbles: true }));
+        }
+    }
+
+    function isCategorySelected() {
+        const cat = document.getElementById("M_Category_1"), subcat = document.getElementById("M_Subcategory_1");
+        return cat?.value === "172" && subcat?.value === "212";
+    }
+
+    function isTextAddedToFields() {
+        const title = document.querySelector('input#title'), desc = document.querySelector('textarea#description');
+        return title?.value.endsWith("Generative AI") && desc?.value.endsWith("Generative AI");
+    }
+
+    function handleButtonClick() {
+        const submitButton = document.querySelector('a#submitbutton');
+        if (submitButton && !isSubmitCooldown) {
+            submitButton.click();
+            isSubmitCooldown = true;
+            checkingNewImage = true;
+            clearInterval(intervalId);
+            checkNewImage();
+            setTimeout(() => isSubmitCooldown = false, cooldownTime);
+        }
+    }
+
+    function checkNewImage() {
+        if (!checkingNewImage) return;
+        const img = document.querySelector("img.zoomImg");
+        if (img && img.src !== previousSrc) {
+            previousSrc = img.src;
+            checkingNewImage = false;
+            setTimeout(() => intervalId = setInterval(findAILabelAndProcess, checkInterval), waitAfterNewImage);
+        }
+        requestAnimationFrame(checkNewImage);
+    }
+
+    function applyChangesAndSubmit() {
+        selectDropdown("M_Category_1", "172");
+        selectDropdown("M_Subcategory_1", "212");
+        addTextToField('input#title', "Generative AI");
+        addTextToField('textarea#description', "Generative AI");
+        setTimeout(() => isCategorySelected() && isTextAddedToFields() && handleButtonClick(), delay);
+    }
+
+    function findAILabelAndProcess() {
+        const aiLabel = document.querySelector('span.label-ai[id="js-label-ai-cat"]');
+        if (aiLabel?.textContent.trim() === "Suggested by our AI engine") applyChangesAndSubmit();
+    }
+
+    intervalId = setInterval(findAILabelAndProcess, checkInterval);
+})();
