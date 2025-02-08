@@ -41,3 +41,12 @@
 
     checkImage();
 })();
+
+
+
+
+
+
+setInterval(() => {
+    console.clear();
+}, 30000);
