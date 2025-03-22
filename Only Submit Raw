@@ -1,15 +1,6 @@
-javascript:(function(){ 
-    "use strict";
-    let prev=""; 
-    (function loop(){ 
-        let img=document.querySelector("img.zoomImg"), 
-            label=document.querySelector("span.label-ai#js-label-ai-cat");
-        if(img && img.src!==prev && img.complete){ 
-            prev=img.src; 
-            if(label?.textContent.trim()==="Suggested by our AI engine") 
-                setTimeout(()=>document.querySelector("a#submitbutton")?.click(),1000+Math.random()*1000);
-        } 
-        setTimeout(loop,500+Math.random()*500); 
-    })(); 
-    setInterval(()=>console.clear(),30000); 
-})();
+"use strict";
+let p="",w=false;
+function l(){let i=document.querySelector("img.zoomImg"),a=document.querySelector("span.label-ai#js-label-ai-cat");
+i&&i.src!==p&&(new Image().src=i.src,p=i.src,w=false);!w&&a?.textContent.trim()==="Suggested by our AI engine"&&(w=true,
+setTimeout(()=>document.querySelector("a#submitbutton")?.click(),500+Math.random()*1500));setTimeout(l,200+Math.random()*300)}
+l();setInterval(()=>console.clear(),3e4);
