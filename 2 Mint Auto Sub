@@ -1,0 +1,1 @@
+javascript:(function(){let p="",t=Date.now();let o=90000+Math.random()*30000;function l(s){new Image().src=s;}setInterval(()=>{let i=document.querySelector("img.zoomImg");if(i&&i.src!==p){l(i.src);p=i.src;t=Date.now();o=90000+Math.random()*30000;}else if(Date.now()-t>=o){document.querySelector("a#submitbutton")?.click();t=Date.now();o=90000+Math.random()*30000;}},500);})();
